@@ -1,5 +1,8 @@
-from src.api import app
+import os
+os.environ["DATABASE_URL"] = "sqlite://"
+
 from fastapi.testclient import TestClient
+from src.api import app
 
 def test_health():
     with TestClient(app) as client:
