@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: btc-volatility-forecast
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
