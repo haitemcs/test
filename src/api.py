@@ -78,8 +78,10 @@ def predict_history(candles: list[Candle]):
 
     raw = pd.DataFrame(raw_candles)
     data = make_features(raw, include_target=False)
-    from src.features import FEATURES
-    prediction = float(MODEL.predict(data.iloc[[-1]][FEATURES])[0])
+
+    last_row = data.iloc[[-1]]
+    features = last_row[FEATURES]
+    prediction = float(MODEL.predict(features)[0])
     last = candles[-1]
 
     with SessionLocal() as session:
