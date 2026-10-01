@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 
 from src.config import settings
 from src.db import Prediction, SessionLocal, init_db
-from src.features import make_features
+from src.features import FEATURES, make_features
 from src.schemas import Candle, PredictionResponse
 
 app = FastAPI(title=settings.api_title, version="0.1.0")
@@ -46,7 +46,9 @@ def predict(candle: Candle):
             detail="Prediction requires historical candles for rolling features; use /predict-history.",
         )
 
-    prediction = float(MODEL.predict(data.iloc[[-1]][__import__("src.features", fromlist=["FEATURES"]).FEATURES])[0])
+    last_row = data.iloc[[-1]]
+    features = last_row[FEATURES]
+    prediction = float(MODEL.predict(features)[0])
     with SessionLocal() as session:
         session.add(Prediction(
             timestamp=candle.timestamp,
@@ -69,7 +71,12 @@ def predict_history(candles: list[Candle]):
     if len(candles) < 200:
         raise HTTPException(status_code=422, detail="Provide at least 200 hourly candles.")
 
-    raw = pd.DataFrame([c.model_dump() for c in candles])
+    raw_candles = []
+
+    for candle in candles:
+        raw_candles.append(candle.model_dump())
+
+    raw = pd.DataFrame(raw_candles)
     data = make_features(raw, include_target=False)
     from src.features import FEATURES
     prediction = float(MODEL.predict(data.iloc[[-1]][FEATURES])[0])
@@ -80,7 +87,9 @@ def predict_history(candles: list[Candle]):
             timestamp=last.timestamp,
             prediction=prediction,
             model_name=MODEL_NAME,
-            request_json=json.dumps([c.model_dump(mode="json") for c in candles[-5:]]),
+            request_json=json.dumps(
+                [c.model_dump(mode="json") for c in candles[-5:]]
+            ),
         ))
         session.commit()
 
