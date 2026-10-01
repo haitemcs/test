@@ -3,8 +3,15 @@ import pandas as pd
 from src.features import FEATURES, TARGET, make_features
 
 def sample(n=220):
-    t = pd.date_range("2026-01-01", periods=n, freq="h", tz="UTC")
+    timestamps = pd.date_range(
+        "2026-01-01",
+        periods=n,
+        freq="h",
+        tz="UTC",
+    )
+
     base = 100 + np.arange(n) * 0.1
+
     return pd.DataFrame({
         "timestamp": t,
         "open": base,
@@ -19,10 +26,14 @@ def sample(n=220):
 
 def test_features_have_no_nan():
     data = make_features(sample())
-    assert not data[FEATURES + [TARGET]].isna().any().any()
+
+    columns_to_check = FEATURES + [TARGET]
+
+    assert not data[columns_to_check].isna().any().any()
     assert len(data) > 0
 
 def test_target_is_future_range():
     raw = sample()
     data = make_features(raw)
+
     assert data[TARGET].iloc[0] >= 0
