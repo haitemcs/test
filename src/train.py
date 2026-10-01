@@ -50,26 +50,48 @@ def run():
     X, y = data[FEATURES], data[TARGET]
 
     tscv = TimeSeriesSplit(n_splits=settings.n_splits)
-    model_scores = {name: [] for name in ["naive", *make_models().keys()]}
+    model_scores = {}
+    model_scores["naive"] = []
+
+    models = make_models()
+
+    for name in models:
+        model_scores[name] = []
 
     for fold, (train_idx, test_idx) in enumerate(tscv.split(X), start=1):
         X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
         y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
         model_scores["naive"].append(metrics(y_test, naive_prediction(y_train, len(test_idx))))
-        for name, model in make_models().items():
+        for name, model in models.items():
             model.fit(X_train, y_train)
             model_scores[name].append(metrics(y_test, model.predict(X_test)))
 
     summary = {}
     for name, scores in model_scores.items():
-        summary[name] = {
-            metric: float(np.mean([s[metric] for s in scores]))
-            for metric in ("mae", "rmse", "r2")
-        }
+        summary[name] = {}
 
-    winner = min((n for n in summary if n != "naive"), key=lambda n: summary[n]["mae"])
-    final_model = make_models()[winner]
+        for metric in ["mae", "rmse", "r2"]:
+            values = []
+
+            for score in scores:
+                values.append(score[metric])
+
+            summary[name][metric] = float(np.mean(values))
+
+    model_names = []
+
+    for name in summary:
+        if name != "naive":
+            model_names.append(name)
+
+    winner = model_names[0]
+
+    for name in model_names:
+        if summary[name]["mae"] < summary[winner]["mae"]:
+            winner = name
+
+    final_model = models[winner]
     final_model.fit(X, y)
 
     Path("artifacts").mkdir(exist_ok=True)
