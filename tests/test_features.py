@@ -13,7 +13,7 @@ def sample(n=220):
     base = 100 + np.arange(n) * 0.1
 
     return pd.DataFrame({
-        "timestamp": t,
+        "timestamp": timestamps,
         "open": base,
         "high": base + 2,
         "low": base - 1,
