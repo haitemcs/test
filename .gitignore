@@ -1,0 +1,20 @@
+# Local environment files may contain machine-specific values or secrets.
+.env
+.venv/
+venv/
+
+# Python bytecode and test/linter caches.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Local build and packaging output.
+build/
+dist/
+*.egg-info/
+
+# Editor and operating-system files.
+.vscode/
+.idea/
+.DS_Store
