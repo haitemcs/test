@@ -106,12 +106,17 @@ def run():
     for name, scores in model_scores.items():
         summary[name] = {}
         for metric_name in ("mae", "rmse", "r2"):
-            values = [score[metric_name] for score in scores]
+            values = []
+            for score in scores:
+                values.append(score[metric_name])
             summary[name][metric_name] = float(np.mean(values))
 
     # Select the ML candidate with the lowest average MAE. The baseline is reported
     # as a reference, but it is not saved as the final model.
-    model_names = [name for name in summary if name != "naive"]
+    model_names = []
+    for name in summary:
+        if name != "naive":
+            model_names.append(name)
     winner = model_names[0]
     for name in model_names:
         if summary[name]["mae"] < summary[winner]["mae"]:
