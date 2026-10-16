@@ -10,9 +10,9 @@ import os
 # SQLite keeps this small test independent of a local PostgreSQL installation.
 os.environ["DATABASE_URL"] = "sqlite://"
 
-from fastapi.testclient import TestClient
+from fastapi.testclient import TestClient  # noqa: E402
 
-from src.api import app
+from src.api import app  # noqa: E402
 
 
 def test_health():
