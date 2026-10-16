@@ -1,12 +1,16 @@
 services:
   db:
+    # PostgreSQL database used to store API prediction records.
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: btcforecast
       POSTGRES_USER: postgres
+      # Development-only password. Use a secret in any real deployment.
       POSTGRES_PASSWORD: postgres
+    # Keep database files in a named volume so they survive container replacement.
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # Compose waits for this check before starting the API service.
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d btcforecast"]
       interval: 5s
@@ -14,16 +18,22 @@ services:
       retries: 10
 
   api:
+    # Build the API image from the Dockerfile in this repository.
     build: .
     environment:
+      # "db" is the Compose service name. Inside this container, localhost would
+      # refer to the API container itself, not the PostgreSQL container.
       DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/btcforecast
     ports:
+      # Expose container port 8000 on port 8000 of the host machine.
       - "8000:8000"
+    # Make locally trained artifacts available inside the running API container.
     volumes:
       - ./artifacts:/app/artifacts
     depends_on:
       db:
         condition: service_healthy
 
+# Docker manages this named volume independently from the containers.
 volumes:
   postgres_data:
