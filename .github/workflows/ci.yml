@@ -1,5 +1,6 @@
 name: CI
 
+# Run checks when main changes and when someone opens or updates a pull request.
 on:
   push:
     branches: ["main"]
@@ -9,6 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      # Download the repository contents into the temporary CI machine.
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -22,6 +24,7 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
+    # Build only after linting and tests succeed.
     needs: test
     steps:
       - uses: actions/checkout@v4
