@@ -102,5 +102,8 @@ def make_features(df: pd.DataFrame, include_target: bool = True) -> pd.DataFrame
 
     # Rolling calculations and lags create missing values near the start. The final
     # training row also has no target because its next candle is outside this dataset.
-    required_columns = FEATURES + ([TARGET] if include_target else [])
+    required_columns = FEATURES.copy()
+    if include_target:
+        required_columns.append(TARGET)
+
     return x.dropna(subset=required_columns).reset_index(drop=True)
