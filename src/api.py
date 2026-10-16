@@ -119,14 +119,16 @@ def predict_history(candles: list[Candle]):
 
     # Store the last five submitted candles as a compact record of the request.
     with SessionLocal() as session:
+        recent_candles = []
+        for candle in candles[-5:]:
+            recent_candles.append(candle.model_dump(mode="json"))
+
         session.add(
             Prediction(
                 timestamp=last.timestamp,
                 prediction=prediction,
                 model_name=MODEL_NAME,
-                request_json=json.dumps(
-                    [candle.model_dump(mode="json") for candle in candles[-5:]]
-                ),
+                request_json=json.dumps(recent_candles),
             )
         )
         session.commit()
